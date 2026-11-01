@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferienhaus Italien — Affordability &amp; Investment Tool</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Can We Afford This Italian Vacation Home?</h1>
+  <p class="subtitle">Enter your numbers once below — all three tabs use the same data.</p>
+</header>
+
+<main>
+
+  <!-- ============================================================
+       SHARED INPUTS — entered once, used by Module 1, 2 and 3.
+       Single source of truth: nothing here is duplicated elsewhere.
+       ============================================================ -->
+  <section class="shared-inputs" aria-label="Shared inputs">
+
+    <fieldset class="input-group">
+      <legend>About us</legend>
+
+      <div class="field">
+        <label for="wealthCHF">Current investable wealth</label>
+        <div class="input-with-unit">
+          <input type="number" id="wealthCHF" value="900000" min="0" step="1000">
+          <span class="unit">CHF</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="incomeCHF">Current annual household income</label>
+        <div class="input-with-unit">
+          <input type="number" id="incomeCHF" value="250000" min="0" step="1000">
+          <span class="unit">CHF/year</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="budgetCHF">Comfortable annual budget for this house</label>
+        <div class="input-with-unit">
+          <input type="number" id="budgetCHF" value="40000" min="0" step="500">
+          <span class="unit">CHF/year</span>
+        </div>
+        <p class="hint">This is the number the affordability verdict is checked against. Shown as monthly too.</p>
+      </div>
+
+      <div class="field">
+        <label for="vacationSpendEUR">What we currently spend per year on comparable vacations</label>
+        <div class="input-with-unit">
+          <input type="number" id="vacationSpendEUR" value="6000" min="0" step="100">
+          <span class="unit">EUR/year</span>
+        </div>
+        <p class="hint">Used in Module 2 as an ongoing cost of the "don't buy, invest instead" path.</p>
+      </div>
+
+      <div class="field">
+        <label for="exchangeRate">Exchange rate: 1 CHF = how many EUR?</label>
+        <div class="input-with-unit">
+          <input type="number" id="exchangeRate" value="1.05" min="0.1" step="0.01">
+          <span class="unit">EUR per CHF</span>
+        </div>
+        <p class="hint assumption-flag">Assumption — please update to today's rate. Held constant; currency risk is not modeled.</p>
+      </div>
+
+      <div class="field">
+        <label for="existingRentalProperties">Other short-term-rented properties we already own in Italy</label>
+        <select id="existingRentalProperties">
+          <option value="0" selected>0 (this would be our 1st)</option>
+          <option value="1">1 (this would be our 2nd)</option>
+          <option value="2">2 or more (this would be our 3rd+)</option>
+        </select>
+        <p class="hint">Drives the Italian cedolare secca tax-rate tier in Module 3.</p>
+      </div>
+    </fieldset>
+
+    <fieldset class="input-group">
+      <legend>About the house</legend>
+
+      <div class="field">
+        <label for="listPrice">List price</label>
+        <div class="input-with-unit">
+          <input type="number" id="listPrice" value="600000" min="0" step="1000">
+          <span class="unit">EUR</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="comune">Comune (town/municipality)</label>
+        <input type="text" id="comune" value="" placeholder="e.g. Cannobio (free text for now)">
+        <p class="hint">A dropdown backed by real tax data arrives in phase 2. Free text for now.</p>
+      </div>
+
+      <div class="field">
+        <label for="sizeM2">Size</label>
+        <div class="input-with-unit">
+          <input type="number" id="sizeM2" value="150" min="0" step="1">
+          <span class="unit">m²</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rooms">Number of rooms</label>
+        <input type="number" id="rooms" value="5" min="1" step="1">
+      </div>
+
+      <div class="field">
+        <label for="renovation">Renovation / setup budget (one lump sum for now)</label>
+        <div class="input-with-unit">
+          <input type="number" id="renovation" value="80000" min="0" step="1000">
+          <span class="unit">EUR</span>
+        </div>
+        <p class="hint">The itemized renovation timeline (with separate non-capitalized setup costs) arrives in phase 5. For now this single amount is added to the house's value, same as the spreadsheet.</p>
+      </div>
+    </fieldset>
+
+    <fieldset class="input-group">
+      <legend>Purchase-time fees</legend>
+      <div class="field">
+        <label for="registroPct">Registro (purchase tax)</label>
+        <div class="input-with-unit">
+          <input type="number" id="registroPct" value="9" min="0" step="0.1">
+          <span class="unit">% of list price</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="notaryPct">Notary fees</label>
+        <div class="input-with-unit">
+          <input type="number" id="notaryPct" value="2" min="0" step="0.1">
+          <span class="unit">% of list price</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="agencyPct">Agency commission (buyer side)</label>
+        <div class="input-with-unit">
+          <input type="number" id="agencyPct" value="3" min="0" step="0.1">
+          <span class="unit">% of list price</span>
+        </div>
+      </div>
+      <p class="hint">These are one-time cash costs at purchase. They increase the cash needed and therefore the equity whose opportunity cost is counted under Capital costs below.</p>
+    </fieldset>
+
+    <fieldset class="input-group">
+      <legend>Financing mix</legend>
+
+      <div class="field">
+        <label>
+          <input type="checkbox" id="cashAuto" checked>
+          Calculate cash portion automatically (total purchase cost minus mortgage minus family loan)
+        </label>
+      </div>
+      <div class="field">
+        <label for="cashManual">Cash amount (only used if automatic is unchecked)</label>
+        <div class="input-with-unit">
+          <input type="number" id="cashManual" value="0" min="0" step="1000">
+          <span class="unit">EUR</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mortgageAmount">Mortgage amount</label>
+        <div class="input-with-unit">
+          <input type="number" id="mortgageAmount" value="200000" min="0" step="1000">
+          <span class="unit">EUR</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="mortgageRate">Mortgage interest rate</label>
+        <div class="input-with-unit">
+          <input type="number" id="mortgageRate" value="3" min="0" step="0.1">
+          <span class="unit">%/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="mortgageYears">Mortgage amortization period</label>
+        <div class="input-with-unit">
+          <input type="number" id="mortgageYears" value="15" min="1" step="1">
+          <span class="unit">years</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="loanAmount">Interest-free family loan amount</label>
+        <div class="input-with-unit">
+          <input type="number" id="loanAmount" value="100000" min="0" step="1000">
+          <span class="unit">EUR</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="loanYears">Family loan repayment period</label>
+        <div class="input-with-unit">
+          <input type="number" id="loanYears" value="10" min="1" step="1">
+          <span class="unit">years</span>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="input-group">
+      <legend>Fixed-cost assumptions <span class="placeholder-tag">editable placeholders — real per-comune data arrives in phase 2</span></legend>
+
+      <div class="field">
+        <label for="utilitiesBaseline">Utilities baseline (electricity/water/heating/building insurance)</label>
+        <div class="input-with-unit">
+          <input type="number" id="utilitiesBaseline" value="3500" min="0" step="100">
+          <span class="unit">EUR/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="insurance">Home insurance</label>
+        <div class="input-with-unit">
+          <input type="number" id="insurance" value="600" min="0" step="50">
+          <span class="unit">EUR/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="maintenancePct">Maintenance reserve</label>
+        <div class="input-with-unit">
+          <input type="number" id="maintenancePct" value="1.2" min="0" step="0.1">
+          <span class="unit">% of house value/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="managementGardenPool">Property management / garden / pool</label>
+        <div class="input-with-unit">
+          <input type="number" id="managementGardenPool" value="4000" min="0" step="100">
+          <span class="unit">EUR/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="imuRate">IMU rate <span class="assumption-flag">(estimate until phase 2)</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="imuRate" value="0.86" min="0" step="0.01">
+          <span class="unit">% of house value/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tari">TARI (waste fee)</label>
+        <div class="input-with-unit">
+          <input type="number" id="tari" value="500" min="0" step="50">
+          <span class="unit">EUR/year</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="commercialista">Commercialista (Italian tax advisor)</label>
+        <div class="input-with-unit">
+          <input type="number" id="commercialista" value="800" min="0" step="50">
+          <span class="unit">EUR/year</span>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="input-group">
+      <legend>Rental &amp; capital-cost assumptions</legend>
+
+      <div class="field">
+        <label for="nightsRented">Nights rented per year</label>
+        <input type="number" id="nightsRented" value="60" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="pricePerNight">Price per night</label>
+        <div class="input-with-unit">
+          <input type="number" id="pricePerNight" value="220" min="0" step="5">
+          <span class="unit">EUR</span>
+        </div>
+        <p class="hint">A dataset-driven suggestion by comune/size arrives in phase 2 — always editable.</p>
+      </div>
+      <div class="field">
+        <label for="platformFeePct">Platform commission (Airbnb/Booking)</label>
+        <div class="input-with-unit">
+          <input type="number" id="platformFeePct" value="15" min="0" step="1">
+          <span class="unit">% of gross rent</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="serviceFeePct">Cleaning / check-in / concierge service</label>
+        <div class="input-with-unit">
+          <input type="number" id="serviceFeePct" value="20" min="0" step="1">
+          <span class="unit">% of gross rent</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cedolareSeccaPct">Cedolare secca rate <span class="placeholder-tag">flat placeholder — full 1st/2nd/3rd+ tiering arrives in Module 3 (phase 4)</span></label>
+        <div class="input-with-unit">
+          <input type="number" id="cedolareSeccaPct" value="21" min="0" step="1">
+          <span class="unit">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="marketReturnRate">Expected market return (opportunity cost of your cash equity)</label>
+        <div class="input-with-unit">
+          <input type="number" id="marketReturnRate" value="5" min="0" step="0.1">
+          <span class="unit">%/year</span>
+        </div>
+        <p class="hint">Same rate Module 2's Base Case will use for the "invest instead" comparison.</p>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" id="includeRentalIncome" checked>
+          Include rental income to offset costs in the affordability verdict
+        </label>
+      </div>
+    </fieldset>
+
+  </section>
+
+  <!-- ============================================================
+       TABS
+       ============================================================ -->
+  <nav class="tabs" role="tablist" aria-label="Modules">
+    <button class="tab-button active" data-tab="tab-affordability" role="tab" aria-selected="true">1. Affordability</button>
+    <button class="tab-button" data-tab="tab-investment" role="tab" aria-selected="false">2. Investment Comparison</button>
+    <button class="tab-button" data-tab="tab-rental" role="tab" aria-selected="false">3. Rental Break-Even</button>
+  </nav>
+
+  <section id="tab-affordability" class="tab-panel" role="tabpanel">
+    <h2>Affordability</h2>
+
+    <div class="results-grid">
+
+      <div class="card">
+        <h3>Fixed costs <span class="card-subtitle">recurring, independent of rental usage</span></h3>
+        <ul id="fixedCostsList" class="cost-list"></ul>
+        <p class="card-total">Total: <strong id="fixedCostsTotal">—</strong> EUR/year</p>
+      </div>
+
+      <div class="card">
+        <h3>Variable costs <span class="card-subtitle">scale with nights actually rented</span></h3>
+        <ul id="variableCostsList" class="cost-list"></ul>
+        <p class="card-total">Total: <strong id="variableCostsTotal">—</strong> EUR/year</p>
+      </div>
+
+      <div class="card">
+        <h3>Capital costs <span class="card-subtitle">cost of the money tied up in this purchase</span></h3>
+        <ul id="capitalCostsList" class="cost-list"></ul>
+        <p class="card-total">Total: <strong id="capitalCostsTotal">—</strong> EUR/year</p>
+      </div>
+
+    </div>
+
+    <div class="card verdict-card">
+      <h3>Bottom line</h3>
+      <table class="verdict-table">
+        <tr>
+          <td>Grand total (Fixed + Variable + Capital)</td>
+          <td id="grandTotalEUR">—</td>
+        </tr>
+        <tr>
+          <td>Gross rental income (offset, if enabled)</td>
+          <td id="rentalOffsetEUR">—</td>
+        </tr>
+        <tr class="emphasis">
+          <td>Net annual cost after rental income</td>
+          <td id="netAnnualCostEUR">—</td>
+        </tr>
+        <tr>
+          <td>&nbsp;&nbsp;↳ per month</td>
+          <td id="netMonthlyCostEUR">—</td>
+        </tr>
+        <tr>
+          <td>&nbsp;&nbsp;↳ converted to CHF per year</td>
+          <td id="netAnnualCostCHF">—</td>
+        </tr>
+        <tr>
+          <td>Your comfortable budget</td>
+          <td id="budgetDisplayCHF">—</td>
+        </tr>
+      </table>
+      <p class="verdict-note">Note on the math: Variable costs (platform fee, service fee, cedolare secca) are exactly the portion of gross rental income that never reaches you. So the grand total already "contains" that cost, and the correct offset to subtract is the <em>full gross rental income</em> — subtracting only the net amount would double-count the variable costs. The result is mathematically identical to simply offsetting fixed+capital costs with net rental income; we show gross here because the grand total above is the literal fixed+variable+capital sum you asked to see.</p>
+      <div id="verdictBadge" class="verdict-badge">—</div>
+    </div>
+
+    <details class="assumptions-panel">
+      <summary>Assumptions &amp; limitations</summary>
+      <ul>
+        <li>All house-side amounts are in EUR; your budget is in CHF — converted using the exchange rate above, held constant (no currency-risk modeling).</li>
+        <li>Fixed-cost and IMU figures are editable placeholders until phase 2 wires in a real per-comune dataset.</li>
+        <li>Cedolare secca is shown here as a flat rate; the legally correct 1st/2nd/3rd+ property tiering (and the business-activity presumption for a 3rd+ property) is implemented in Module 3.</li>
+        <li>Capital costs use only year-1 mortgage interest, year-1 linear amortization, and year-1 linear family-loan repayment — a snapshot, not a multi-year schedule. The 30-year path lives in Module 2.</li>
+        <li>Opportunity cost of cash equity = cash equity × the expected market return rate above. This is what makes "capital costs" reflect the true cost of tying up that money, not just financing costs.</li>
+        <li>Verdict thresholds (editable in spirit, not yet in the UI): comfortably affordable if net annual cost ≤ budget; tight if ≤ 115% of budget; not affordable above that.</li>
+        <li>This is not tax or legal advice — see the full disclaimers ported from the spreadsheet's "Anleitung" sheet, which will be expanded here in phase 7.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="tab-investment" class="tab-panel" role="tabpanel" hidden>
+    <h2>Investment Comparison</h2>
+    <p class="coming-soon">Coming in phase 3 — a 30-year projection of house ownership vs. investing the same money in the market, ported from your spreadsheet.</p>
+  </section>
+
+  <section id="tab-rental" class="tab-panel" role="tabpanel" hidden>
+    <h2>Rental Break-Even</h2>
+    <p class="coming-soon">Coming in phase 4 — break-even nights, a town comparison table, and the CIN/cedolare secca regulatory details.</p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Personal planning tool — not tax or legal advice. See the assumptions panel in each module.</p>
+</footer>
+
+<script src="js/calculations.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
